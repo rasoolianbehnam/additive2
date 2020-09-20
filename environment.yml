@@ -1,8 +1,4 @@
 name: additive2
-channels: !!python/tuple
-  - anaconda
-  - nodefaults
-  - conda-forge
 dependencies:
   - python=3.6
   - pip
@@ -12,10 +8,12 @@ dependencies:
   - distributed
   - scikit-learn
   - opencv
+  - imageio
   - seaborn
   - tensorflow<2
 
   - pip:
+    - sh
     - pathos
     - joblib
     - statsmodels
