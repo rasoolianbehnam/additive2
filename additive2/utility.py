@@ -1,4 +1,6 @@
 import os
+from typing import List, Union, Iterable
+
 import numpy as np
 import cv2
 from sklearn.cluster import  KMeans
@@ -36,6 +38,7 @@ def crop_rect(img, rect):
 
     return img_crop, img_rot
 
+
 def get_rotated_rect(I, isImage=True):
     if isImage:
         if isinstance(I, str):
@@ -47,9 +50,16 @@ def get_rotated_rect(I, isImage=True):
         return cv2.minAreaRect(max_contour)
     return cv2.minAreaRect(I)
 
+
 def remove_outliers(x, n_classes=2):
     #x = np.array(x).reshape(-1, 1)
     kmeans = KMeans(n_classes)
     classes = kmeans.fit_predict(x)
     c = max(list(range(n_classes)), key=lambda x : np.sum(classes==x))
     return x[classes==c], classes, c
+
+
+def min_max_scale(x, mn=0, mx=255, dtype='uint8'):
+    xmin, xmax = np.min(x), np.max(x)
+    out = (x-xmin)/(xmax-xmin) * (mx-mn) + mn
+    return out.astype(dtype)
