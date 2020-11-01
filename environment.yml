@@ -10,9 +10,10 @@ dependencies:
   - opencv
   - imageio
   - seaborn
-  - tensorflow<2
+  - tensorflow
 
   - pip:
+    - python-igraph
     - sh
     - pathos
     - joblib
