@@ -80,10 +80,11 @@ class EllipsoidTool:
         """Calculate the volume of the blob"""
         return 4./3.*np.pi*radii[0]*radii[1]*radii[2]
 
-    def plotEllipsoid(self, ellipsoid: Ellipsoid, ax=None, plotAxes=False, cageColor='b', cageAlpha=0.2):
+    def plotEllipsoid(self, ellipsoid: Ellipsoid, ax=None, 
+                      plotAxes=False, cageColor='b', cageAlpha=0.2):
         """Plot an ellipsoid"""
         center, radii, rotation = ellipsoid
-        make_ax = ax == None
+        make_ax = ax is None
         if make_ax:
             fig = plt.figure()
             ax = fig.add_subplot(111, projection='3d')
