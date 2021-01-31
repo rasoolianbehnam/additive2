@@ -35,10 +35,5 @@ docs/_build/
 
 # data files
 data/
-config.py
-globalnames
-history
-objectdb
-additive2
-jupyter
+jupyter/
 tags
