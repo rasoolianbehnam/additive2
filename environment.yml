@@ -15,6 +15,7 @@ dependencies:
   - pip:
     - python-igraph
     - sh
+    - ann_visualizer
     - pathos
     - joblib
     - statsmodels

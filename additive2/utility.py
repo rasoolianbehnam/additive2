@@ -2,22 +2,23 @@
 # pylint: disable=trailing-whitespace, unnecessary-lambda
 # %%
 import os
-from itertools import combinations
-from typing import List, Tuple
-
 import cv2  # type: ignore
 import igraph as gp  # type: ignore
 import matplotlib.pyplot as plt  # type: ignore
 import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
+from itertools import combinations
+from typing import List, Tuple
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from scipy.signal import convolve2d  # type: ignore
 from scipy.spatial.distance import cdist, pdist  # type: ignore
 from scipy.spatial.qhull import ConvexHull  # type: ignore
 from scipy.stats import ttest_1samp  # type: ignore
 from sklearn.cluster import KMeans  # type: ignore
-
 from additive2.plotEllipsoid import Ellipsoid, EllipsoidTool
-from mpl_toolkits.mplot3d.art3d import Poly3DCollection, Line3DCollection
+
+Point3d = Tuple[int, int, int]
+CubeCorners = Tuple[Point3d, Point3d, Point3d, Point3d]
 
 
 def dfe(file):
@@ -98,7 +99,7 @@ def min_max_scale(x,
     return res
 
 
-def get_circle_mask(img, erode_kernel):
+def get_circle_mask(img: np.ndarray, erode_kernel: np.ndarray):
     """to get a mask for the middle
     circle in super-high-res images"""
     w, h, = img.shape
@@ -140,8 +141,8 @@ def find_pores_2(img, mask, kernel_size, pore_area_ratio):
 def get_pore_image(kernel_size, smoothed_img, mask):
     kernel = make_mean_kernel(kernel_size)
     means = convolve2d(smoothed_img, kernel, mode='valid')
-    means_sq = convolve2d(smoothed_img**2, kernel, mode='valid')
-    std = np.sqrt(means_sq - means**2)
+    means_sq = convolve2d(smoothed_img ** 2, kernel, mode='valid')
+    std = np.sqrt(means_sq - means ** 2)
     k2 = kernel_size // 2
     assert smoothed_img[k2:-k2, k2:-k2].shape == means.shape
     pore_img_ = ((smoothed_img[k2:-k2, k2:-k2] <
@@ -197,7 +198,7 @@ def get_clusters(pore_img: np.ndarray):
     eligible_dists_appended = np.hstack([[0], eligible_dists])  #
     clusters_ = np.cumsum((eligible_dists - eligible_dists_appended[:-1]) == 1)
     clusters = clusters_ * eligible_dists
-    clusters2d = np.zeros((len(xyz), ) * 2, dtype='int')
+    clusters2d = np.zeros((len(xyz),) * 2, dtype='int')
     clusters2d[(ix, iy)] = clusters
 
     return clusters2d, xyz
@@ -355,13 +356,13 @@ class PoreFeatures:
     def a_e(self):
         a, b, c = self.ellipsoid.radii
 
-        return 4 * np.pi * (((a * b)**1.6 + (a * c)**1.6 +
-                             (b * c)**1.6) / 3)**(1 / 1.6)
+        return 4 * np.pi * (((a * b) ** 1.6 + (a * c) ** 1.6 +
+                             (b * c) ** 1.6) / 3) ** (1 / 1.6)
 
     @property  # type: ignore
     @feature("Ellipsoid Elongation")
     def elongation_e(self):
-        return self.a_e**3 / self.v_e**2 / (36 * np.pi)
+        return self.a_e ** 3 / self.v_e ** 2 / (36 * np.pi)
 
     @property  # type: ignore
     @feature
@@ -371,15 +372,15 @@ class PoreFeatures:
     @property  # type: ignore
     @feature("Pore Sphericity")
     def sphericity(self):
-        top = (6 * self.v_h)**(2 / 3)
+        top = (6 * self.v_h) ** (2 / 3)
         bottom = self.a_h
 
-        return (np.pi**(1 / 3)) * top / bottom
+        return (np.pi ** (1 / 3)) * top / bottom
 
     @property  # type: ignore
     @feature("Pore Elongation")
     def elongation(self):
-        return self.a_h**3 / self.v_h**2 / (36 * np.pi)
+        return self.a_h ** 3 / self.v_h ** 2 / (36 * np.pi)
 
     @property
     def all_features(self):
@@ -425,6 +426,7 @@ def get_feature_pairs(cluster_map: List[Tuple[int, int]], pts1: np.ndarray,
 
     return features1, features2
 
+
 # %%
 
 
@@ -432,14 +434,14 @@ def ttest_pvalue(x: pd.Series) -> float:
     return ttest_1samp(x, 0).pvalue
 
 
-def draw_voxels(pts, ax, alpha=.1):
+def draw_voxels(pts: np.ndarray, ax, alpha: float = .1):
     for pt in pts:
         x_, y_, z_ = pt
-        cube_definition = [(x_, y_, z_), (x_+1, y_, z_), (x_, y_+1, z_), (x_, y_, z_+1)]
+        cube_definition = ((x_, y_, z_), (x_ + 1, y_, z_), (x_, y_ + 1, z_), (x_, y_, z_ + 1))
         plot_cube(cube_definition, ax=ax, alpha=alpha)
-        
-        
-def plot_cube(cube_definition, alpha=.1, ax=None):
+
+
+def plot_cube(cube_definition: CubeCorners, alpha=.1, ax=None):
     cube_definition_array = [
         np.array(list(item))
         for item in cube_definition
